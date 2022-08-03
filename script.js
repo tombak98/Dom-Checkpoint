@@ -5,7 +5,7 @@
  **************/
 
 function updateCoffeeView(coffeeQty) {
-  // your code here
+  let test = document.getElementById("coffee")
 }
 
 function clickCoffee(data) {
