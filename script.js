@@ -129,11 +129,22 @@ function attemptToBuyProducer(data, producerId) {
 }
 
 function buyButtonClick(event, data) {
-  // your code here
+  if (event.target.tagName === "BUTTON") {
+    let status = attemptToBuyProducer(data, event.target.id.slice(4))
+    if (status === false) {
+      window.alert("Not enough coffee!")
+    } else {
+      renderProducers(data)
+      updateCoffeeView(data.coffee)
+      updateCPSView(data.totalCPS)
+    }
+  }
 }
 
 function tick(data) {
-  // your code here
+  data.coffee += data.totalCPS
+  updateCoffeeView(data.coffee)
+  renderProducers(data)
 }
 
 /*************************
