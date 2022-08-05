@@ -165,8 +165,12 @@ if (typeof process === 'undefined') {
   // Get starting data from the window object
   // (This comes from data.js)
   let data = window.data;
+  let resetData = window.data;
   if (localStorage.getItem('oldData')) {
-    data = localStorage.getItem('oldData')
+    data = JSON.parse(localStorage.getItem('oldData'))
+    updateCPSView(data.totalCPS)
+    updateCoffeeView(data.coffee)
+    renderProducers(data)
   }
 
   // Add an event listener to the giant coffee emoji
@@ -184,7 +188,21 @@ if (typeof process === 'undefined') {
   setInterval(() => tick(data), 1000);
 
   // Also, save the game status browser periodically
-  setInterval(() => localStorage.setItem('oldData', data), 5000)
+  setInterval(() => localStorage.setItem('oldData', JSON.stringify(data)), 5000)
+
+  // reset function
+  function resetGame() {
+    data = resetData
+    updateCPSView(data.totalCPS)
+    updateCoffeeView(data.coffee)
+    renderProducers(data)
+  }
+
+  // reset button
+  const resetButton = document.querySelector(".reset")
+  resetButton.addEventListener("click", function() {
+    resetGame()
+  })
 }
 // Meanwhile, if we aren't in a browser and are instead in node
 // we'll need to exports the code written here so we can import and
@@ -206,6 +224,7 @@ else if (process) {
     updatePrice,
     attemptToBuyProducer,
     buyButtonClick,
-    tick
+    tick,
+    resetGame
   };
 }
