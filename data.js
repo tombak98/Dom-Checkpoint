@@ -11,9 +11,9 @@ window.data = {
     },
     {
       id: 'french_press',
-      price: 50,
+      price: 30,
       unlocked: false,
-      cps: 2,
+      cps: 3,
       qty: 0
     },
     {
