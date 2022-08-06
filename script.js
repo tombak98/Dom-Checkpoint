@@ -50,7 +50,10 @@ function makeProducerDiv(producer) {
   const html = `
   <div class="producer-column">
     <div class="producer-title">${displayName}</div>
-    <button type="button" id="buy_${producer.id}">Buy</button>
+    <div class="button-box">
+    <button type="button" id="buy_${producer.id}" class="buy_button">Buy</button>
+    <button type="button" id="sell_${producer.id}" class="sell_button">Sell</button>
+    </div>
   </div>
   <div class="producer-column">
     <div>Quantity: ${producer.qty}</div>
@@ -147,6 +150,67 @@ function tick(data) {
   renderProducers(data)
 }
 
+/****************
+ * EXTRA SECTION
+******************/
+
+function attemptToSellProducer(data, producerId) {
+  let producer = getProducerById(data, producerId)
+  if (producer.qty > 0) {
+    data.producers.forEach(function(element) {
+    if (producerId === element.id) {
+      element.qty -= 1
+      data.coffee += element.price
+      element.price = updatePriceDown(element.price)
+    }
+    })
+    data.totalCPS -= producer.cps
+    return true
+  } else {
+    return false
+  } 
+}
+
+function sellButtonClick(event, data) {
+  if (event.target.className === "sell_button") {
+    let status = attemptToSellProducer(data, event.target.id.slice(5))
+    if (status === false) {
+      window.alert("You can't sell what you don't have!")
+    } else {
+      renderProducers(data)
+      updateCoffeeView(data.coffee)
+      updateCPSView(data.totalCPS)
+    }
+  }
+}
+
+function updatePriceDown(oldPrice) {
+  let newPrice = oldPrice/1.25
+  return Math.ceil(newPrice)
+}
+
+function increaseCPC(data) {
+  if (data.coffee >= 200) {
+    data.extraCPC += 1;
+    data.coffee -= 200
+    return true
+  } else {
+    window.alert("Not enough!")
+    return false
+  }
+}
+
+function additionalClicks(data) {
+  data.coffee += data.extraCPC
+  updateCoffeeView(data.coffee)
+  renderProducers(data)
+}
+
+function updateCPCview(data) {
+  const cpcNumber = document.querySelector('#cpc')
+  cpcNumber.innerText = (parseInt(data.extraCPC) + 1).toString()
+}
+
 /*************************
  *  Start your engines!
  *************************/
@@ -165,9 +229,10 @@ if (typeof process === 'undefined') {
   // Get starting data from the window object
   // (This comes from data.js)
   let data = window.data;
-  let resetData = window.data;
+  localStorage.setItem('resetData', JSON.stringify(data))
   if (localStorage.getItem('oldData')) {
     data = JSON.parse(localStorage.getItem('oldData'))
+    updateCPCview(data)
     updateCPSView(data.totalCPS)
     updateCoffeeView(data.coffee)
     renderProducers(data)
@@ -175,13 +240,32 @@ if (typeof process === 'undefined') {
 
   // Add an event listener to the giant coffee emoji
   const bigCoffee = document.getElementById('big_coffee');
-  bigCoffee.addEventListener('click', () => clickCoffee(data));
+  bigCoffee.addEventListener('click', function() {
+    clickCoffee(data);
+    additionalClicks(data);
+  })
+
+  // Increase the coffee per click
+  const cpc = document.querySelector("#extra_cpc")
+  cpc.addEventListener('click', function() {
+    let status = increaseCPC(data)
+    if (status) {
+    updateCPCview(data)
+    updateCPSView(data.totalCPS)
+    updateCoffeeView(data.coffee)
+    renderProducers(data)
+    }
+  })
 
   // Add an event listener to the container that holds all of the producers
   // Pass in the browser event and our data object to the event listener
   const producerContainer = document.getElementById('producer_container');
   producerContainer.addEventListener('click', event => {
-    buyButtonClick(event, data);
+    if (event.target.className === "buy_button") {
+      buyButtonClick(event, data);
+    } else if (event.target.className === "sell_button") {
+      sellButtonClick(event, data);
+    }
   });
 
   // Call the tick function passing in the data object once per second
@@ -192,10 +276,11 @@ if (typeof process === 'undefined') {
 
   // reset function
   function resetGame() {
-    data = resetData
+    data = JSON.parse(localStorage.getItem('resetData'))
     updateCPSView(data.totalCPS)
     updateCoffeeView(data.coffee)
     renderProducers(data)
+    updateCPCview(data)
   }
 
   // reset button

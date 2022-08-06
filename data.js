@@ -86,5 +86,6 @@ window.data = {
       cps: 2000,
       qty: 0
     }
-  ]
+  ],
+  extraCPC: 0
 };
