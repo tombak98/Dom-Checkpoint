@@ -160,8 +160,8 @@ function attemptToSellProducer(data, producerId) {
     data.producers.forEach(function(element) {
     if (producerId === element.id) {
       element.qty -= 1
-      data.coffee += element.price
       element.price = updatePriceDown(element.price)
+      data.coffee += element.price
     }
     })
     data.totalCPS -= producer.cps
